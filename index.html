@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Konakta Cinayet</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: gece, sis, telsiz cızırtısı — kısa, gergin, Türkçe noir.
+   IDEA: bir mesajlaşma uygulamasının içine düşmüş polis dosyası.
+   PICTURE: fırtınalı Karadeniz yaylasında tek penceresi yanan taş konak.
+   COLOUR and TYPE: sis yeşili zemin, koyu ladin, tek kan kırmızısı; DM Serif Display + Inter.
+   LAYOUT: büyük sahne + başlık, sonra hikâye ve modlar; oyunda tam ekran sohbet. */
+:root{color-scheme:light dark;--bg:light-dark(#e4eae7,#0b1315);--ink:light-dark(#12201e,#e2e9e6);--mut:light-dark(#53625e,#8fa09b);--card:light-dark(#f6f8f7,#142023);--line:light-dark(#cdd7d3,#22343a);--soft:light-dark(#d7e0dc,#18272b);--moss:#2b4a42;--blood:#b3261e;--me:light-dark(#2b4a42,#2f5a50)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"DM Serif Display",Georgia,serif;font-weight:400;line-height:1.05;text-wrap:balance;margin:0}
+button,input,select{font:inherit;font-size:16px}
+button{cursor:pointer;border:0;border-radius:12px;min-height:44px;padding:0 18px;background:var(--moss);color:#fff;font-weight:600}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+button.red{background:var(--blood)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,.cc:focus-visible{outline:3px solid #6fb3a0;outline-offset:2px}
+input,select{min-height:44px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:0 14px;width:100%}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1100px;margin:0 auto}
+.hero{position:relative;height:clamp(300px,52vh,480px);background:#0a1416;overflow:hidden}
+.hero svg{position:absolute;inset:0;width:100%;height:100%}
+.hero .t{position:absolute;left:max(5vw,16px);right:max(5vw,16px);bottom:clamp(20px,4vw,40px);color:#eef3f1}
+.hero h1{font-size:clamp(36px,6.4vw,64px);max-width:12ch}
+.hero p{margin:10px 0 0;color:#b9c8c3;max-width:46ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(20px,4vw,48px)}
+.lab{font-size:13px;font-weight:600;color:var(--mut);margin:16px 0 4px}
+.story p{margin:0 0 12px;max-width:66ch}
+.modes{display:grid;gap:12px}
+.mode{display:flex;gap:14px;align-items:center;text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);padding:16px;border-radius:16px;min-height:76px}
+.mode:hover{border-color:var(--moss)}
+.mode b{display:block;font-size:17px}.mode span{color:var(--mut);font-size:14px;font-weight:400}
+.mode i{flex:none;width:44px;height:44px;border-radius:50%;background:var(--moss);display:grid;place-items:center;color:#fff;font-style:normal;font-weight:700}
+.rules{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:8px;font-size:15px}
+.rules li{display:flex;gap:10px}.rules li::before{content:"";flex:none;width:8px;height:8px;margin-top:8px;border-radius:50%;background:var(--blood)}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h2{font-size:clamp(28px,4vw,40px);flex:1}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.cc{position:relative;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:8px}
+.cc.on{border-color:var(--moss);box-shadow:0 0 0 3px color-mix(in srgb,var(--moss) 30%,transparent)}
+.cc.taken{opacity:.55;cursor:not-allowed}
+.cc .h{display:flex;gap:12px;align-items:center}
+.cc h3{font-size:22px}.cc small{color:var(--mut);font-size:13px}
+.cc p{margin:0;font-size:14.5px}.cc .tr{color:var(--mut);font-style:italic}
+.tag{position:absolute;top:12px;right:12px;font-size:13px;background:var(--moss);color:#fff;border-radius:99px;padding:2px 10px}
+.av{flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;letter-spacing:.02em}
+.foot{position:sticky;bottom:0;background:var(--bg);padding:14px 0;margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line)}
+.foot span{flex:1;color:var(--mut);font-size:14px}
+.center{min-height:100dvh;display:grid;place-items:center;padding:24px 16px}
+.panel{width:min(520px,100%);background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:24px}
+.panel h2{font-size:32px;margin-bottom:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.row>*{flex:1 1 140px}
+.code{font-family:"DM Serif Display",serif;font-size:56px;letter-spacing:.12em;color:var(--blood)}
+.note{color:var(--blood);font-size:14px;min-height:20px;margin-top:8px}
+/* game */
+.game{height:100dvh;display:flex;flex-direction:column}
+.gh{display:flex;align-items:center;gap:10px;padding:10px max(3vw,12px);background:#0e1a1c;color:#e8efec;flex-wrap:wrap}
+.gh .tt{flex:1}.gh .tt b{font-family:"DM Serif Display",serif;font-weight:400;font-size:21px;display:block;line-height:1.1}.gh .tt span{font-size:13px;color:#9fb1ab}
+.dots{display:flex;gap:6px;align-items:center;font-size:13px;color:#9fb1ab}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid #6b7f79}.dots i.x{background:var(--blood);border-color:var(--blood)}
+.gh button{min-height:40px;padding:0 14px}
+.gh .ghost{color:#e8efec;border-color:#33484c}
+.thread{flex:1;overflow-y:auto;padding:16px max(3vw,12px);display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.m{display:flex;gap:10px;align-items:flex-end;max-width:min(620px,88%)}
+.m.me{align-self:flex-end;flex-direction:row-reverse}
+.bub{background:var(--card);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:8px 12px}
+.m.me .bub{background:var(--me);color:#fff;border-color:transparent;border-radius:16px 16px 4px 16px}
+.bub b{display:block;font-size:13px}.bub b em{font-style:normal;font-weight:400;opacity:.7}
+.bub p{margin:2px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.m.pend{opacity:.55}
+.sys{align-self:center;width:min(560px,100%);background:var(--soft);border-left:4px solid var(--blood);border-radius:10px;padding:10px 14px;font-size:15px}
+.sys b{display:block;font-size:13px;color:var(--blood)}
+.typing{font-size:14px;color:var(--mut);padding:0 max(3vw,12px);min-height:22px}
+.comp{padding:8px max(3vw,12px) 12px;border-top:1px solid var(--line);background:var(--bg)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}
+.chips button{flex:none;min-height:34px;padding:0 12px;border-radius:99px;font-size:14px;font-weight:500;background:var(--soft);color:var(--ink)}
+.inrow{display:flex;gap:8px}
+.inrow select{flex:0 0 150px}
+.inrow input{flex:1}
+/* overlays */
+.ov{position:fixed;inset:0;background:rgba(5,10,11,.72);display:grid;place-items:center;padding:16px;z-index:20}
+.ov[hidden]{display:none}
+.sheet{width:min(560px,100%);max-height:90dvh;overflow-y:auto;background:var(--card);border-radius:20px;padding:22px}
+.sheet h2{font-size:30px}
+.sheet .x{float:right}
+.role .rhead{display:flex;gap:14px;align-items:center}
+.role h3{font-size:28px}.role .rhead p{margin:0;color:var(--mut)}
+.role p{margin:0}
+.verdict{margin:16px 0 4px;font-family:"DM Serif Display",serif;font-size:30px;color:var(--moss)}
+.role.killer .verdict{color:var(--blood)}
+.cl{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.cl li{background:var(--soft);border-radius:10px;padding:8px 12px;font-size:15px}
+.cl li small{display:block;color:var(--mut);font-size:13px}
+.sus{display:grid;gap:10px}.sus div{display:flex;gap:10px;align-items:flex-start}.sus p{margin:0;font-size:14.5px}
+.warn{position:fixed;inset:0;z-index:50;display:grid;place-items:center;pointer-events:none}
+.warn[hidden]{display:none}
+.warn.go{animation:fl .55s ease-in-out 3}
+@keyframes fl{0%,100%{background:rgba(179,38,30,0)}50%{background:rgba(179,38,30,.6)}}
+.wbox{background:#1a0606;color:#fff;border:3px solid var(--blood);border-radius:18px;padding:22px 26px;text-align:center;width:min(420px,92vw)}
+.wbox b{font-family:"DM Serif Display",serif;font-weight:400;font-size:40px;display:block;color:#ff8a80}
+.wbox p{margin:6px 0}.wbox small{color:#e5b5b0;font-size:13px}
+.vs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
+.vs button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;background:var(--soft);color:var(--ink);height:auto}
+.bars{display:grid;gap:8px;margin-top:8px}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 28px;gap:10px;align-items:center;font-size:14px}
+.bar div{height:12px;border-radius:6px;background:var(--line);overflow:hidden}.bar div i{display:block;height:100%;background:var(--blood)}
+.bar span:last-child{text-align:right}
+.big{font-size:clamp(34px,6vw,54px)}
+.win{color:var(--moss)}.lose{color:var(--blood)}
+@media(max-width:700px){.grid2{grid-template-columns:minmax(0,1fr)}.inrow select{flex-basis:110px}.gh .tt span{display:none}}
+@media(prefers-reduced-motion:reduce){.rain{display:none}.warn.go{animation:none;background:rgba(179,38,30,.45)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="ov" id="modal" hidden><div class="sheet" id="sheet"></div></div>
+<div class="warn" id="warn" hidden><div class="wbox"><b id="wt">Uyarı</b><p id="wr"></p><small id="ws">3 uyarıda oyun sıfırlanır.</small></div></div>
+
+<template id="scene">
+<svg viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#071012"/><stop offset=".6" stop-color="#13272a"/><stop offset="1" stop-color="#1d3532"/></linearGradient>
+<radialGradient id="moon" cx=".72" cy=".2" r=".3"><stop offset="0" stop-color="#cfe0da" stop-opacity=".55"/><stop offset="1" stop-color="#cfe0da" stop-opacity="0"/></radialGradient>
+<radialGradient id="lamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffe7a6" stop-opacity=".9"/><stop offset="1" stop-color="#ffe7a6" stop-opacity="0"/></radialGradient>
+<filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+<path id="tree" d="M0 0 L-9 22 L-4 22 L-12 40 L-5 40 L-14 60 L14 60 L5 40 L12 40 L4 22 L9 22 Z"/>
+<pattern id="rp" width="40" height="60" patternUnits="userSpaceOnUse"><line x1="30" y1="0" x2="22" y2="22" stroke="#9fc0b6" stroke-opacity=".28" stroke-width="1.2"/><line x1="10" y1="30" x2="2" y2="52" stroke="#9fc0b6" stroke-opacity=".2" stroke-width="1"/></pattern>
+</defs>
+<rect width="800" height="420" fill="url(#sky)"/>
+<rect width="800" height="420" fill="url(#moon)"/>
+<path d="M0 250 Q160 170 320 220 T640 190 T800 210 V420 H0Z" fill="#162a2a"/>
+<g fill="#0f1f1f"><use href="#tree" x="60" y="200"/><use href="#tree" x="95" y="212"/><use href="#tree" x="690" y="168"/><use href="#tree" x="728" y="180"/><use href="#tree" x="760" y="172"/></g>
+<ellipse cx="400" cy="260" rx="420" ry="40" fill="#3b5552" opacity=".55" filter="url(#blur)"/>
+<path d="M0 320 Q200 255 420 290 T800 280 V420 H0Z" fill="#0c1a1a"/>
+<g transform="translate(330 168)">
+<rect x="-6" y="-26" width="16" height="40" fill="#1a2626"/>
+<path d="M-20 30 L80 -24 L180 30Z" fill="#101a1b"/>
+<path d="M80 -24 L180 30 L172 30 L80 -16Z" fill="#2a3b3b"/>
+<rect x="-10" y="30" width="180" height="96" fill="#1c2a2a"/>
+<rect x="-10" y="30" width="180" height="6" fill="#2b3d3c"/>
+<rect x="160" y="30" width="10" height="96" fill="#132020"/>
+<g fill="#0c1515"><rect x="8" y="50" width="22" height="30"/><rect x="48" y="50" width="22" height="30"/><rect x="128" y="50" width="22" height="30"/><rect x="8" y="90" width="22" height="30"/><rect x="128" y="90" width="22" height="30"/><rect x="66" y="92" width="26" height="34"/></g>
+<circle cx="99" cy="65" r="40" fill="url(#lamp)"/>
+<rect x="88" y="50" width="22" height="30" fill="#ffd97a"/>
+<path d="M99 50 V80 M88 65 H110" stroke="#5a4a2a" stroke-width="2"/>
+<path d="M96 66 q3 -9 7 0 v14 h-7z" fill="#2a2216" opacity=".75"/>
+</g>
+<g fill="#0a1616"><use href="#tree" x="250" y="250" transform="scale(1)"/><use href="#tree" x="285" y="262"/><use href="#tree" x="560" y="244"/><use href="#tree" x="598" y="256"/></g>
+<ellipse cx="300" cy="350" rx="380" ry="34" fill="#4c6662" opacity=".45" filter="url(#blur)"/>
+<g class="rain"><rect width="800" height="480" y="-60" fill="url(#rp)"><animateTransform attributeName="transform" type="translate" from="0 0" to="-16 60" dur=".7s" repeatCount="indefinite"/></rect></g>
+</svg>
+</template>
+
+<script>
+{
+const STORY = ["14 Kasım gecesi, Uzungöl'ün yukarısındaki taş Hacıoğlu Konağı. Karadeniz'in en büyük fındık tüccarlarından Kemal Hacıoğlu (68), akşam yemeğinde vasiyetini ertesi sabah değiştireceğini açıkladı ve masadaki herkesin yüzü düştü.",
+"Fırtına yolu kapattı, telefonlar zor çekiyor. 23:10'da elektrikler kesildi, 23:30'da geri geldi. 23:40'ta Kemal Bey kütüphanede, bronz bir şamdanla vurulmuş halde bulundu.",
+"Konaktaki şüphelilerden biri katil. Komiser Rıza telsizle bağlı; ipuçlarını üç turda tek tek iletecek. Sabaha kadar katili bulun. Katil sizseniz, kimse anlamadan sabahı edin."];
+const BASE = "Kemal Bey 23:40'ta kütüphanede ölü bulundu. Cinayet aleti bronz bir şamdan. Elektrikler 23:10 ile 23:30 arasında kesikti; katil karanlıktan yararlandı.";
+const C = [
+{id:'selin',name:'Selin Arslan',role:'Avukat',age:41,color:'#9b3d63',
+ pub:"Kemal Bey'in 15 yıllık avukatı. Vasiyeti o hazırladı; bu akşamki değişikliği ilk o duydu.",
+ trait:"Hep yasemin parfümü sürer.",
+ secret:"Kemal Bey'in sana emanet ettiği 2 milyon lirayı kötü bir yatırımda kaybettin. Vasiyet açılırsa her şey ortaya çıkacak.",
+ alibi:"23:00–23:40 arası odanda bir müvekkille telefonda olduğunu söylüyorsun. Arama kaydını göstermek istemiyorsun.",
+ clues:["Masada yırtılmış bir vasiyet sayfası var; kenarında bir hukuk bürosu kaşesinin yarısı seçiliyor.","Kemal Bey'in banka ekstrelerinde emanet hesaptan büyük ve açıklanamayan bir para çıkışı görülüyor.","Kütüphane kapısının kolunda belirgin bir yasemin kokusu var."],
+ obs:"yoğun bir yasemin parfümü kokusu aldın",
+ truth:"23:00'te kütüphaneye gittin. Kemal Bey emanet parayı sorup seni baroya şikâyet edeceğini söyledi. Elektrik kesilince şamdanı kaptın, sonra vasiyetin seni ele veren sayfasını yırttın."},
+{id:'orhan',name:'Dr. Orhan Demir',role:'Aile doktoru',age:58,color:'#3d6b8f',
+ pub:"Ailenin 30 yıllık doktoru. Kemal Bey'in kalp ilaçlarını o ayarlıyor.",
+ trait:"Eski bir kazadan beri sol bacağını hafifçe sürüyerek yürür.",
+ secret:"Kemal Bey'e yıllardır vergi işleri için sahte sağlık raporları yazıyordun. Bu akşam seni ihbar etmekle tehdit etti.",
+ alibi:"Elektrik kesildiğinde salonda kitap okuduğunu söylüyorsun; ama salonda seni gören olmadı.",
+ clues:["Kemal Bey'in çay fincanında hafif bir uyku ilacı kalıntısı bulundu.","Konaktaki ilaç şişelerinden biri yarı boş, etiketi tırnakla kazınmış.","Kütüphanenin halısında, bir ayağını sürüyen birinin bıraktığı düzensiz çamur izi var."],
+ obs:"ayağını sürüyerek yürüyen birinin ayak seslerini duydun",
+ truth:"Kemal Bey'in çayına uyku ilacı kattın ama yetmedi. Karanlıkta kütüphaneye girip şamdanla vurdun; ayakkabındaki çamur halıda kaldı."},
+{id:'murat',name:'Murat Hacıoğlu',role:'Yeğen',age:29,color:'#a0622a',
+ pub:"Kemal Bey'in yeğeni ve tek mirasçısı. İstanbul'dan iki gün önce geldi.",
+ trait:"Elinde hep metal bir çakmak çevirir, kapağını açıp kapatır.",
+ secret:"Tefecilere büyük bir kumar borcun var. Amcan bu akşam seni mirastan çıkaracağını söyledi.",
+ alibi:"Terasta sigara içtiğini söylüyorsun. Dışarıda yağmur vardı ama üstün kuruydu.",
+ clues:["Kemal Bey'in cebinden çıkan nota göre biriyle 23:00'te kütüphanede buluşacaktı. Notta yalnızca 'Son şansın' yazıyor.","Misafir odalarından birinde tefecilerden gelen tehdit mesajlarının çıktıları bulundu.","Şöminenin yanında, kapağı eğilmiş metal bir çakmak bulundu."],
+ obs:"metal bir çakmak kapağının tık tık açılıp kapandığını duydun",
+ truth:"Not sana yazılmıştı. Amcan borcunu ödemeyeceğini söyleyince öfkeyle şamdanı kaptın. Kaçarken çakmağın şöminenin yanına düştü."},
+{id:'hatice',name:'Hatice Yılmaz',role:'Konağın aşçısı',age:52,color:'#5f7a2e',
+ pub:"Konağın 20 yıllık aşçısı. Evin her köşesini, her anahtarını bilir.",
+ trait:"Mutfaktan çıksa bile önlüğünde hep un olur.",
+ secret:"Kemal Bey'in yıllar önce terk ettiği kadının kızısın. Bunu konakta kimse bilmiyor.",
+ alibi:"Mutfakta ertesi günün hamurunu yoğurduğunu söylüyorsun. Elektrik gidince mumu sen yaktın.",
+ clues:["Elektrikler mutfaktaki sigorta kutusundan kesilmiş; biri şalteri elle indirmiş.","Kemal Bey'in masasında eski bir fotoğraf var: genç bir kadın ve bebek. Arkasında 'Sürmene, 1974' yazıyor.","Şamdanın kaidesinde un izleri bulundu."],
+ obs:"karanlıkta yanından hızla geçen birinden un kokusu ve tozu geldi",
+ truth:"Şalteri mutfakta kendin indirdin. Karanlıkta kütüphaneye girip yıllardır içinde taşıdığın hesabı kapattın. Önlüğündeki un şamdana bulaştı."},
+{id:'deniz',name:'Deniz Kaya',role:'Özel sekreter',age:34,color:'#6b4f9a',
+ pub:"Kemal Bey'in özel sekreteri. Şirketin bütün yazışmaları ondan geçer.",
+ trait:"Boynunda hiç çıkarmadığı kırmızı ipek bir fular vardır.",
+ secret:"Şirketin ihale belgelerini rakip firmaya satıyordun. Kemal Bey bugün bunu fark etti.",
+ alibi:"Odanda rapor yazdığını söylüyorsun; bilgisayarının şarjı bitince karanlıkta oturdun.",
+ clues:["Kemal Bey'in bilgisayarından 23:05'te bir e-posta silinmiş.","Silinen e-postanın konusu kurtarıldı: 'İhale belgeleri: sızıntı'.","Kütüphane penceresinin menteşesine takılı kırmızı ipek bir iplik bulundu."],
+ obs:"telefon ışığında kırmızı bir kumaşın parladığını gördün",
+ truth:"Kemal Bey sızıntıyı fark edip polisi arayacaktı. 23:05'te suçlayan e-postayı sildin, elektrik kesilince şamdanla vurdun ve pencereden çıktın; fuların menteşeye takıldı."},
+{id:'can',name:'Can Öztürk',role:'Fotoğrafçı',age:37,color:'#2f7d74',
+ pub:"Bir dergi için Kemal Bey'in portresini çekmeye geldi. Akşam yemeğinde onunla sesli tartıştı.",
+ trait:"Boynunda eski bir film fotoğraf makinesi asılıdır.",
+ secret:"Kemal Bey'in 1990'lardaki bir arazi skandalını araştırıyorsun. Bu akşam seni kovdu ve dava açmakla tehdit etti.",
+ alibi:"Odanda film banyo ettiğini söylüyorsun; karanlık oda için ışıklar zaten kapalıydı.",
+ clues:["Kemal Bey'in elinde sıkıca kavranmış bir film rulosu kapağı var.","Bir tanık, elektrik kesikken kütüphane yönünde bir flaş patlaması gördüğünü söylüyor.","Kemal Bey'in arşiv dolabı zorlanmış; 1990'lara ait arazi dosyaları eksik."],
+ obs:"kütüphane yönünden kısa bir flaş patlaması gördün",
+ truth:"Kemal Bey seni arşiv dosyalarını alırken yakaladı. Boğuşmada şamdanı kaptın, kanıt diye flaşla fotoğraf çektin ve dosyalarla kaçtın; film kapağı onun elinde kaldı."}
+];
+const FALL = ["Beni suçlamadan önce kendi mazeretine bak.","O saatte ne yaptığımı zaten söyledim, tekrar mı anlatayım?","Bu ipucu bence benden çok başkasını gösteriyor.","Bu evde herkes bir şey saklıyor, sadece ben değil.","Elektrikler kesildiğinde bir ses duydum ama nereden geldiğini bilmiyorum.","Kemal Bey'le aram iyiydi. Aksini kim kanıtlayabilir?","Sakin olalım. Komiser'in bir sonraki ipucunu bekleyelim."];
+const BAD_TOK = ["amk","aq","amq","sik","sikik","göt","oç","piç","ibne","seks","sex","mk","orosbu","yavşak","porn"];
+const BAD_SUB = ["orospu","siktir","sikerim","sikeyim","siktiğ","amına","amina","amcık","yarrak","pezevenk","kahpe","gavat","şerefsiz","fuck","shit","bitch","porno","götveren","ananı","anani"];
+const OFF_TOK = ["maç","ödev","sınav","instagram","tiktok","youtube","netflix","whatsapp","bitcoin","kripto","chatgpt","claude","gpt","lol","futbol"];
+const OFF_SUB = ["galatasaray","fenerbahçe","beşiktaş","trabzonspor","yapay zeka","yapay zekâ","http","www.",".com","playstation","fortnite"];
+
+const byId = id => C.find(c => c.id === id);
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const first = id => byId(id).name.replace('Dr. ','').split(' ')[0];
+const DEV = Math.random().toString(36).slice(2,10);
+let roomNS = null, sampleNS = undefined, R = null, unsubs = [], tick = null, resetting = false;
+let S = fresh();
+
+/* ---------- PeerJS ile çevrimiçi oda (sunucusuz, eşler arası) ---------- */
+const ICE = {iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:global.stun.twilio.com:3478'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}]};
+const PEER_OPT = location.hash === '#yerel' ? {host:'127.0.0.1', port:9000, path:'/', config:ICE} : {config:ICE};
+function makePeerRoom(){
+  return { join: (name, isHost) => new Promise((resolve, reject) => {
+    const hid = 'hkcinayet-' + name;
+    let pres = {}, others = {}, hs = [], conns = [], hostConn = null, done = false;
+    const peer = isHost ? new Peer(hid, PEER_OPT) : new Peer(PEER_OPT);
+    const fail = msg => { if (done) return; done = true; clearTimeout(to); try{ peer.destroy(); }catch(e){} reject(new Error(msg)); };
+    const ok = () => { if (done) return; done = true; clearTimeout(to); resolve(api); };
+    const to = setTimeout(() => fail('timeout'), 15000);
+    const snap = () => [{peer:'me', sameTab:true, presence:{...pres}}, ...Object.entries(others).map(([k,v]) => ({peer:k, sameTab:false, presence:v||{}}))];
+    const fire = () => setTimeout(() => { const ps = snap(); hs.forEach(h => { try{ h({peers:ps, joined:[], left:[], updated:[]}); }catch(e){ console.error(e); } }); }, 0);
+    function fanout(){ conns.forEach(c => { if (!c.open) return; const all = {host:pres}; for (const k in others) if (k !== c.peer) all[k] = others[k]; try{ c.send({all}); }catch(e){} }); }
+    function send(){ if (isHost) fanout(); else if (hostConn && hostConn.open){ try{ hostConn.send({p:pres}); }catch(e){} } }
+    const api = {
+      presence: async patch => { for (const k in patch){ if (patch[k] === null) delete pres[k]; else pres[k] = JSON.parse(JSON.stringify(patch[k])); } send(); fire(); },
+      peers: snap,
+      onPeers: h => { hs.push(h); fire(); return () => { hs = hs.filter(x => x !== h); }; },
+      leave: async () => { done = true; try{ peer.destroy(); }catch(e){} }
+    };
+    peer.on('error', e => { const t = e && e.type; if (t === 'unavailable-id') fail('taken'); else if (t === 'peer-unavailable') fail('nohost'); else if (!done) fail('net'); else if (!isHost && t === 'network'){ others = {}; fire(); } });
+    if (isHost){
+      peer.on('open', ok);
+      peer.on('connection', c => {
+        conns.push(c);
+        c.on('open', () => fanout());
+        c.on('data', d => { if (d && d.p && typeof d.p === 'object'){ others[c.peer] = d.p; fire(); fanout(); } });
+        const gone = () => { conns = conns.filter(x => x !== c); delete others[c.peer]; fire(); fanout(); };
+        c.on('close', gone); c.on('error', gone);
+      });
+    } else {
+      peer.on('open', () => {
+        hostConn = peer.connect(hid, {reliable:true});
+        hostConn.on('open', () => { ok(); send(); });
+        hostConn.on('data', d => { if (d && d.all && typeof d.all === 'object'){ others = d.all; fire(); } });
+        hostConn.on('close', () => { others = {}; fire(); if (S.mode === 'online' && S.phase !== 'start'){ S.note = 'Ev sahibiyle bağlantı koptu.'; } });
+      });
+    }
+  }) };
+}
+function fresh(){ return {mode:null,phase:'start',players:[],killer:null,herring:null,observer:null,round:0,strikes:0,reason:'',votes:{},msgs:[],me:null,sendAs:null,ri:0,riShow:false,vi:0,viShow:false,host:false,code:'',busy:false,seen:new Set(),name:'',sel:{},note:''}; }
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]); }
+const inGame = id => S.players.some(p => p.cid === id);
+const pl = id => S.players.find(p => p.cid === id);
+const H = () => S.players.filter(p => p.human);
+function addSilent(){ if (S.players.length < 3) C.forEach(c => { if (!inGame(c.id)) S.players.push({cid:c.id, name:'', human:false}); }); }
+
+function av(id, size=40){ const c = byId(id); const ini = c.name.replace('Dr. ','').split(' ').map(w=>w[0]).join('').slice(0,2); return `<span class="av" style="width:${size}px;height:${size}px;background:${c.color};font-size:${Math.round(size*.36)}px">${ini}</span>`; }
+function who(id){ const c = byId(id), p = pl(id); const extra = S.mode !== 'solo' && p && p.human && p.name ? ` <em>· ${esc(p.name)}</em>` : S.mode !== 'solo' && p && !p.human ? ' <em>· sessiz şüpheli</em>' : (S.mode==='solo' && id===S.me ? ' <em>· sen</em>' : ''); return `${esc(c.name)}${extra}`; }
+
+/* ---------- moderation ---------- */
+function norm(t){ return t.toLocaleLowerCase('tr'); }
+function localMod(text){
+  const t = norm(text), toks = t.split(/[^a-zçğıöşüâîû0-9]+/).filter(Boolean);
+  if (toks.some(w => BAD_TOK.includes(w)) || BAD_SUB.some(s => t.includes(s))) return 'Küfür ya da uygunsuz ifade kullanıldı.';
+  if (toks.some(w => OFF_TOK.includes(w)) || OFF_SUB.some(s => t.includes(s))) return 'Konu dışı mesaj. Konuşma cinayet ve konak etrafında kalmalı.';
+  if (/(.)\1{7,}/.test(t) || text.length > 280) return 'Anlamsız ya da çok uzun mesaj (spam).';
+  return null;
+}
+function modPrompt(text){
+  return `Türkçe bir cinayet-gizem rol yapma (mesajlaşma) oyununda bir oyuncu mesajını denetliyorsun. Oyun: bir konakta işlenen cinayet, şüpheliler birbirini sorguluyor.
+Mesaj: """${text}"""
+Mesaj küfür, hakaret, cinsel ya da nefret içeriği barındırıyorsa VEYA cinayet hikâyesiyle/oyunla tamamen ilgisizse (futbol, ödev, gerçek hayat konuları, yapay zekâya sorular gibi) ok=false yap ve kısa Türkçe sebep yaz. Karakter içinde sert sorgulama, suçlama, yalan ve oyunla ilgili her soru serbesttir. Kısa selamlaşma ve emin olmadığın durumlar ok=true.
+Sadece JSON döndür: {"ok":true,"reason":""}`;
+}
+async function claudeMod(text){
+  if (!sampleNS) return null;
+  try { const r = await withTimeout(sampleNS.json(modPrompt(text), {modelTier:'quick'}), 9000); if (r && r.ok === false) return String(r.reason || 'Uygunsuz ya da konu dışı mesaj.').slice(0,160); }
+  catch(e){ if (e && e.code === 'not_granted') sampleNS = null; }
+  return null;
+}
+function flash(final){
+  const w = $('#warn');
+  $('#wt').textContent = final ? 'Oyun sıfırlanıyor' : `Uyarı ${S.strikes}/3`;
+  $('#wr').textContent = S.reason || '';
+  $('#ws').textContent = final ? '3 uyarıya ulaşıldı. Başa dönülüyor…' : '3 uyarıda oyun sıfırlanır.';
+  w.hidden = false; w.classList.remove('go'); void w.offsetWidth; w.classList.add('go');
+  clearTimeout(flash.t); if (!final) flash.t = setTimeout(() => { w.hidden = true; }, 2600);
+}
+function strike(reason){
+  if (S.mode === 'online'){ if (S.host) hostStrike(reason); else setMy({sk:[...(myPres.sk||[]), {id:DEV+'-s'+Date.now(), reason:String(reason).slice(0,160)}].slice(-3)}); return; }
+  S.strikes++; S.reason = reason;
+  if (S.strikes >= 3) return doReset();
+  flash(); updateGame();
+}
+function doReset(){
+  if (resetting) return; resetting = true;
+  S.strikes = 3; flash(true); closeModal();
+  setTimeout(() => { leaveRoom(); S = fresh(); resetting = false; $('#warn').hidden = true; render(); }, 3200);
+}
+
+/* ---------- game setup ---------- */
+function setupRoles(){
+  const ids = S.players.map(p => p.cid);
+  S.killer = rnd(ids);
+  const inn = ids.filter(i => i !== S.killer);
+  S.herring = inn.length ? rnd(inn) : null;
+  const humInn = S.players.filter(p => p.human && p.cid !== S.killer).map(p => p.cid);
+  S.observer = humInn.length ? rnd(humInn) : (inn.length ? rnd(inn) : null);
+  S.round = 1; S.votes = {}; S.strikes = 0; S.msgs = []; S.reason = '';
+}
+function cluesFor(r){
+  const k = byId(S.killer);
+  if (r === 1) return [BASE, k.clues[0]];
+  if (r === 2){ const a = [k.clues[1]]; if (S.herring){ const h = byId(S.herring).clues[0]; S.herring < S.killer ? a.unshift(h) : a.push(h); } return a; }
+  return [k.clues[2]];
+}
+function intro(){ S.msgs.push({sys:true, head:'Komiser Rıza · telsiz', text:`Herkes salonda kalsın. Şüpheliler: ${S.players.map(p=>byId(p.cid).name).join(', ')}. İlk bilgileri iletiyorum.`}); }
+function postClues(r){ cluesFor(r).forEach(t => S.msgs.push({sys:true, head:`İpucu · Tur ${r}`, text:t})); }
+function addMsg(m){ S.msgs.push(m); updateGame(); }
+
+function startSolo(cid){
+  S.players = C.map(c => ({cid:c.id, name:c.id===cid?'Sen':'', human:c.id===cid}));
+  S.me = cid; setupRoles(); intro(); postClues(1); S.phase = 'game'; render();
+  showRole(cid);
+  const npcs = S.players.filter(p => !p.human);
+  const opener = npcs.find(p => p.cid !== S.killer) || npcs[0];
+  setTimeout(() => addMsg({cid:opener.cid, text:'Kimse kapıdan çıkmasın. Kemal Bey o kütüphaneye yalnız girmedi, bundan eminim.'}), 900);
+}
+function startLocal(){
+  const ids = Object.keys(S.sel);
+  S.players = ids.map((id,i) => ({cid:id, name:(S.sel[id]||'').trim() || `Oyuncu ${i+1}`, human:true}));
+  addSilent(); setupRoles(); intro(); postClues(1); S.sendAs = S.players[0].cid; S.ri = 0; S.riShow = false; S.phase = 'reveal'; render();
+}
+function advance(){
+  if (S.round < 3){ S.round++; postClues(S.round); if (S.mode==='online') broadcast(); updateGame(); if (S.mode==='solo') soloReact(); }
+  else { S.phase = 'vote'; S.vi = 0; S.viShow = false; S.votes = {}; if (S.mode==='online') broadcast(); render(); }
+}
+
+/* ---------- solo NPCs ---------- */
+function history(){ return S.msgs.slice(-16).map(m => m.sys ? `[Komiser Rıza]: ${m.text}` : `${byId(m.cid).name}: ${m.text}`).join('\n'); }
+function buildPrompt(text, react){
+  const me = byId(S.me);
+  const npcs = S.players.filter(p => !p.human).map(p => { const c = byId(p.cid);
+    return `- id:${c.id} | ${c.name}, ${c.role}, ${c.age}. ${c.pub} ${c.trait} Sırrı (saklamaya çalışır): ${c.secret} Mazereti: ${c.alibi} ` + (c.id === S.killer ? `BU KARAKTER KATİL. Gerçek: ${c.truth} Asla itiraf etmez, yalan söyler, şüpheyi başkasına çevirir.` : 'Masum.' + (c.id === S.observer ? ` Karanlıkta ${byId(S.killer).obs}; bunu ancak sıkıştırılırsa ya da güvenirse söyler.` : '')); }).join('\n');
+  const clues = []; for (let r=1; r<=S.round; r++) cluesFor(r).forEach(t => clues.push(`Tur ${r}: ${t}`));
+  return `Türkçe bir cinayet-gizem mesajlaşma oyununda NPC karakterleri oynuyorsun.
+
+HİKÂYE: ${STORY.join(' ')}
+
+OYUNCU: ${me.name} (${me.role}). ${me.pub} ${me.trait}
+
+NPC KARAKTERLER:
+${npcs}
+
+AÇIKLANAN İPUÇLARI:
+${clues.join('\n')}
+
+SON MESAJLAR:
+${history()}
+
+` + (react ? `Komiser az önce yeni ipucu açıkladı. 1 ya da 2 NPC buna kısa tepki versin. ok her zaman true.`
+: `OYUNCUNUN YENİ MESAJI: """${text}"""
+
+GÖREV 1, DENETİM: Mesaj küfür, hakaret, cinsel ya da nefret içeriği barındırıyorsa VEYA cinayet hikâyesiyle/oyunla ilgisizse (futbol, ödev, gerçek hayat konuları, yapay zekâya sorular gibi) ok=false yap, kısa Türkçe sebep yaz, replies boş kalsın. Karakter içinde sert sorgulama, suçlama, yalan ve oyunla ilgili her soru serbest; emin değilsen ok=true.
+GÖREV 2, CEVAP: ok ise mesaja en ilgili 1 ya da 2 NPC cevap versin. @ ile ya da adıyla çağrılan karakter mutlaka cevap verir.`)
++ `
+Kurallar: Her cevap en fazla 2 kısa cümle, doğal mesajlaşma dili, karakterin ağzından, Türkçe. NPC'ler katilin kim olduğunu bilmez (katil NPC hariç, o da saklar). Sırlarını kolay vermezler ama baskı altında ipucu kaçırabilirler. Hikâyeyle tutarlı kal; yeni kanıt uydurma.
+SADECE şu JSON'u döndür: {"ok":true,"reason":"","replies":[{"char":"<npc id>","text":"..."}]}`;
+}
+function fallbackReplies(text){
+  const t = norm(text || '');
+  const npcs = S.players.filter(p => !p.human).map(p => p.cid);
+  let target = npcs.find(id => t.includes(norm(first(id))));
+  target = target || rnd(npcs);
+  let line = rnd(FALL);
+  if (target === S.killer && S.herring && S.herring !== target) line = `Bence ${byId(S.herring).name} bir şeyler saklıyor. Ona sorun.`;
+  return [{char:target, text:line}];
+}
+function cleanReplies(res){
+  return res && Array.isArray(res.replies) ? res.replies.filter(r => r && typeof r.text === 'string' && r.text.trim() && byId(r.char) && inGame(r.char) && r.char !== S.me).slice(0,2) : [];
+}
+async function soloTurn(text){
+  const m = {cid:S.me, text, pend:true}; addMsg(m);
+  S.busy = true; setTyping('Şüpheliler yazıyor…');
+  let res = null;
+  if (sampleNS){ try { res = await withTimeout(sampleNS.json(buildPrompt(text,false), {modelTier:'quick'}), 25000); } catch(e){ if (e && e.code==='not_granted') sampleNS = null; } }
+  S.busy = false; setTyping('');
+  if (res && res.ok === false){ S.msgs = S.msgs.filter(x => x !== m); updateGame(); return strike(String(res.reason||'Konu dışı ya da uygunsuz mesaj.').slice(0,160)); }
+  m.pend = false; updateGame();
+  let reps = cleanReplies(res); if (!reps.length) reps = fallbackReplies(text);
+  for (const r of reps){ setTyping(`${byId(r.char).name} yazıyor…`); await sleep(700); setTyping(''); if (S.phase!=='game') return; addMsg({cid:r.char, text:r.text.trim().slice(0,400)}); }
+}
+async function soloReact(){
+  if (S.busy) return; S.busy = true; setTyping('Şüpheliler ipucunu okuyor…');
+  let res = null;
+  if (sampleNS){ try { res = await withTimeout(sampleNS.json(buildPrompt('',true), {modelTier:'quick'}), 25000); } catch(e){} }
+  S.busy = false; setTyping('');
+  let reps = cleanReplies(res); if (!reps.length) reps = fallbackReplies('');
+  for (const r of reps){ await sleep(600); if (S.phase!=='game') return; addMsg({cid:r.char, text:r.text.trim().slice(0,400)}); }
+}
+
+/* ---------- sending ---------- */
+async function send(){
+  const inp = $('#msg'); if (!inp || S.busy) return;
+  const text = inp.value.trim(); if (!text) return;
+  const cid = S.mode === 'local' ? S.sendAs : S.me; if (!cid) return;
+  const lm = localMod(text); inp.value = '';
+  if (lm) return strike(lm);
+  if (S.mode === 'solo') return soloTurn(text);
+  S.busy = true; setTyping('Mesaj kontrol ediliyor…');
+  const cm = await claudeMod(text);
+  S.busy = false; setTyping('');
+  if (cm) return strike(cm);
+  if (S.mode === 'local') return addMsg({cid, text});
+  const id = DEV + '-' + Date.now(); S.seen.add(id);
+  addMsg({cid, text});
+  setMy({out:[...(myPres.out||[]), {id, cid, text:text.slice(0,280)}].slice(-3)});
+}
+function setTyping(t){ const el = $('#typing'); if (el) el.textContent = t; }
+
+/* ---------- online room (presence tabanlı: davetli herkes yazabilir) ---------- */
+let myPres = {}, ver = 0, lastV = -1;
+const clean = t => String(t||'').replace(/[\u0000-\u001f\u007f-\u009f­​-‏‪-‮⁠-⁤﻿]/g, '');
+function setMy(patch){
+  Object.assign(myPres, patch);
+  if (R) R.presence(patch).catch(()=>{});
+  if (S.host && R) hostProcess(R.peers());
+}
+function shared(){ return {phase:S.phase,players:S.players,killer:S.killer,herring:S.herring,observer:S.observer,round:S.round,strikes:S.strikes,reason:S.reason,votes:S.votes,code:S.code}; }
+function broadcast(over){ if (S.host && R) R.presence({st:{...shared(), ...(over||{}), v:++ver}}).catch(()=>{}); }
+function presOf(p){ return p.sameTab ? myPres : (p.presence || {}); }
+function hostProcess(peers){
+  if (!S.host) return;
+  let changed = false;
+  const list = peers.map(presOf);
+  if (!peers.some(p => p.sameTab)) list.push(myPres);
+  if (S.phase === 'pick'){
+    const byDev = new Map(); list.forEach(pr => { if (pr && pr.dev) byDev.set(pr.dev, pr); });
+    const before = JSON.stringify(S.players);
+    S.players = S.players.filter(x => { const pr = byDev.get(x.dev); return pr && pr.claim === x.cid; });
+    byDev.forEach((pr, dev) => {
+      if (!pr.claim || !byId(pr.claim) || S.players.some(x => x.dev === dev || x.cid === pr.claim)) return;
+      S.players.push({cid:pr.claim, name:clean(pr.name).slice(0,20) || 'Oyuncu', human:true, dev});
+    });
+    S.me = (S.players.find(x => x.dev === DEV) || {}).cid || null;
+    changed = before !== JSON.stringify(S.players);
+  }
+  if (S.phase === 'game') list.forEach(pr => (Array.isArray(pr.sk) ? pr.sk : []).forEach(k => {
+    if (k && k.id && !S.seen.has(k.id) && S.phase === 'game'){ S.seen.add(k.id); hostStrike(clean(k.reason).slice(0,160) || 'Uygunsuz mesaj.'); }
+  }));
+  if (S.phase === 'vote'){
+    list.forEach(pr => { const v = S.players.find(x => x.human && x.dev === pr.dev); if (v && pr.vote && inGame(pr.vote) && pr.vote !== v.cid && S.votes[v.cid] !== pr.vote){ S.votes[v.cid] = pr.vote; changed = true; } });
+    if (H().length && H().every(p => S.votes[p.cid])){ S.phase = 'end'; changed = true; }
+  }
+  if (changed){ broadcast(); render(); }
+}
+function hostStrike(reason){
+  S.strikes++; S.reason = reason;
+  if (S.strikes >= 3){ broadcast({phase:'reset'}); return doReset(); }
+  broadcast(); flash(); updateGame();
+}
+function applyState(d){
+  if (!d || !Array.isArray(d.players)) return;
+  if (d.phase === 'reset'){ S.reason = clean(d.reason); return doReset(); }
+  const prev = S.phase, prevStrikes = S.strikes;
+  S.players = d.players.filter(p => p && byId(p.cid)).map(p => ({...p, name:clean(p.name).slice(0,20)})); S.killer = d.killer; S.herring = d.herring; S.observer = d.observer; S.votes = d.votes || {}; S.reason = clean(d.reason);
+  const mine = S.players.find(p => p.dev === DEV); S.me = mine ? mine.cid : null;
+  const gameish = ['game','vote','end'];
+  if (gameish.includes(d.phase) && !gameish.includes(prev)){ S.msgs = []; S.round = 0; intro(); S.strikes = d.strikes || 0; if (S.me) setTimeout(() => showRole(S.me), 300); }
+  while (S.round < (d.round||0)){ S.round++; postClues(S.round); }
+  S.strikes = d.strikes || 0;
+  const changed = d.phase !== prev;
+  S.phase = d.phase;
+  if (changed || S.phase !== 'game') render(); else updateGame();
+  if (S.strikes > prevStrikes && S.phase === 'game') flash();
+}
+function onMsg(d){
+  if (!d || !d.id || S.seen.has(d.id) || S.phase !== 'game' || !inGame(d.cid) || typeof d.text !== 'string') return;
+  S.seen.add(d.id); addMsg({cid:d.cid, text:clean(d.text).slice(0,280)});
+}
+function onPeersChange(ch){
+  const peers = ch.peers || [];
+  if (!S.host) peers.forEach(p => { const st = p.sameTab ? null : (p.presence || {}).st; if (st && typeof st.v === 'number' && st.v > lastV){ lastV = st.v; applyState(st); } });
+  peers.forEach(p => { if (p.sameTab) return; const out = (p.presence || {}).out; if (Array.isArray(out)) out.forEach(onMsg); });
+  if (S.host) hostProcess(peers);
+  if (S.phase === 'pick' && S.code) render();
+}
+async function enterRoom(code, host){
+  S.note = 'Bağlanılıyor…'; render();
+  try { R = await roomNS.join(code.toLowerCase(), host); }
+  catch(e){ const m = e && e.message; if (m === 'taken' && host){ return enterRoom(Array.from({length:4}, () => 'ABCDEFGHJKMNPRSTUVYZ'[Math.floor(Math.random()*20)]).join(''), true); } S.note = m === 'nohost' ? 'Bu kodla açık bir oda bulunamadı. Kodu ve ev sahibinin sayfasının açık olduğunu kontrol et.' : 'Bağlantı kurulamadı. İnternetini kontrol et; mobil veride olmazsa Wi-Fi dene.'; return render(); }
+  S.code = code.toUpperCase(); S.host = host; S.note = ''; ver = 0; lastV = -1;
+  myPres = {dev:DEV, name:clean(S.name).slice(0,20), claim:null, out:[], sk:[], vote:null};
+  R.presence({...myPres, st:null}).catch(()=>{});
+  unsubs.push(R.onPeers(onPeersChange));
+  if (host) broadcast();
+  render();
+}
+function leaveRoom(){ unsubs.forEach(u => { try{u()}catch(e){} }); unsubs = []; if (R) R.leave().catch(()=>{}); R = null; myPres = {}; }
+
+/* ---------- overlays ---------- */
+function showModal(html){ $('#sheet').innerHTML = html; $('#modal').hidden = false; }
+function closeModal(){ $('#modal').hidden = true; $('#sheet').innerHTML = ''; }
+function roleHTML(cid){
+  const c = byId(cid), k = cid === S.killer;
+  const seen = cid === S.observer ? `Elektrikler kesikken koridorda ${byId(S.killer).obs}.` : 'Elektrikler kesikken, 23:20 civarı üst kattan bir kapının sertçe kapandığını duydun.';
+  return `<div class="role ${k?'killer':''}"><div class="rhead">${av(cid,56)}<div><h3>${esc(c.name)}</h3><p>${esc(c.role)}, ${c.age}</p></div></div>
+  ${k ? `<div class="verdict">Katil sensin.</div><p class="lab">Gerçekte olan</p><p>${esc(c.truth)}</p><p class="lab">Seni ele verebilecek iz</p><p>${esc(c.trait)} Şüpheyi başkasına çevir ama aşırı savunmaya geçme.</p>`
+       : `<div class="verdict">Masumsun.</div><p class="lab">Gördüğün şey</p><p>${esc(seen)}</p>`}
+  <p class="lab">Sırrın (saklamak isteyebilirsin)</p><p>${esc(c.secret)}</p>
+  <p class="lab">Mazeretin</p><p>${esc(c.alibi)}</p></div>`;
+}
+function showRole(cid){ showModal(`<button class="ghost x" data-a="close">Kapat</button>${roleHTML(cid)}`); }
+function fileHTML(){
+  const clues = []; for (let r=1; r<=S.round; r++) cluesFor(r).forEach(t => clues.push(`<li><small>Tur ${r}</small>${esc(t)}</li>`));
+  let role = '';
+  if (S.mode === 'local') role = `<p class="lab">Rol kartları: yalnızca sahibi baksın</p><div class="row">${H().map(p => `<button class="ghost" data-a="roleof" data-c="${p.cid}">${esc(p.name)}</button>`).join('')}</div>`;
+  else if (S.me) role = `<div class="row"><button data-a="roleof" data-c="${S.me}">Rol kartımı göster</button></div>`;
+  return `<button class="ghost x" data-a="close">Kapat</button><h2>Dava dosyası</h2>${role}
+  <p class="lab">İpuçları</p><ul class="cl">${clues.join('')}</ul>
+  <p class="lab">Şüpheliler</p><div class="sus">${S.players.map(p => { const c = byId(p.cid); return `<div>${av(c.id,36)}<p><b>${who(c.id)}</b>, ${esc(c.role)}<br>${esc(c.pub)} <i>${esc(c.trait)}</i></p></div>`; }).join('')}</div>
+  <p class="lab">Hikâye</p>${STORY.map(s => `<p style="margin:0 0 8px">${esc(s)}</p>`).join('')}`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const f = {start:rStart, pick:rPick, reveal:rReveal, game:rGame, vote:rVote, end:rEnd}[S.phase] || rStart;
+  f();
+}
+function rStart(){
+  app.innerHTML = `<section class="hero">${$('#scene').innerHTML}<div class="t"><h1>Hacıoğlu Konağı'nda Cinayet</h1><p>Mesajlaşarak oynanan bir cinayet oyunu. Hikâyeyi biliyorsun; sonunu bilmiyorsun.</p></div></section>
+  <section class="band"><div class="wrap grid2">
+    <div class="story"><p class="lab">Bu gece ne oldu</p>${STORY.map(s=>`<p>${esc(s)}</p>`).join('')}
+      <ul class="rules"><li>Karakterini seç. Rol kartın sana gizlice katil olup olmadığını söyler.</li><li>Üç tur boyunca konuşun, birbirinizi sorgulayın (@isim). Her tur yeni ipucu gelir.</li><li>Sonunda oylama: en çok oy alan suçlanır. Katil yakalanmazsa katil kazanır.</li><li>Konu dışı ya da uygunsuz her mesaj bir uyarıdır. 3 uyarıda oyun sıfırlanır.</li></ul></div>
+    <div><p class="lab">Nasıl oynayacaksın?</p><div class="modes">
+      <button class="mode" data-a="mode" data-m="solo"><i>1</i><div><b>Tek kişi</b><span>Diğer şüpheliler hazır cevaplarla konuşur.</span></div></button>
+      <button class="mode" data-a="mode" data-m="local"><i>2+</i><div><b>Aynı telefonda</b><span>2–6 kişi, telefonu sırayla elden ele verin.</span></div></button>
+      <button class="mode" data-a="mode" data-m="online" ${roomNS?'':'disabled'}><i>⌁</i><div><b>Çevrimiçi oda</b><span>${roomNS?'Herkes kendi cihazından, oda koduyla katılır.':'Çevrimiçi oda yüklenemedi. İnternet bağlantını kontrol edip sayfayı yenile.'}</span></div></button>
+    </div></div>
+  </div></section>`;
+}
+function card(c, extra=''){ return `<div class="h">${av(c.id,48)}<div><h3>${esc(c.name)}</h3><small>${esc(c.role)}, ${c.age}</small></div></div><p>${esc(c.pub)}</p><p class="tr">${esc(c.trait)}</p>${extra}`; }
+function rPick(){
+  if (S.mode === 'online') return rLobby();
+  const local = S.mode === 'local', n = Object.keys(S.sel).length;
+  app.innerHTML = `<section class="band"><div class="wrap">
+  <div class="top"><button class="ghost" data-a="home">← Geri</button><h2>${local ? 'Oyuncular karakterlerini seçsin' : 'Karakterini seç'}</h2></div>
+  <p style="margin:-6px 0 18px;color:var(--mut)">${local ? 'Her oyuncu için bir karakter seç ve adını yaz. Katil gizlice belirlenir. 2 kişi oynarsanız boşta kalan karakterler sessiz şüpheli olarak konakta kalır ve katil onlardan biri de olabilir.' : 'Kim olursan ol, katil de olabilirsin. Rolün oyun başlayınca açılır.'}</p>
+  <div class="cards">${C.map(c => { const on = local && c.id in S.sel; return `<div class="cc ${on?'on':''}" tabindex="0" role="button" data-a="pick" data-c="${c.id}">${on?'<span class="tag">Seçildi</span>':''}${card(c, on ? `<input data-in="${c.id}" placeholder="Oyuncunun adı" maxlength="20" value="${esc(S.sel[c.id]||'')}">` : '')}</div>`; }).join('')}</div>
+  ${local ? `<div class="foot"><span>${n} oyuncu seçildi (2–6 gerekli)</span><button data-a="lstart" ${n<2?'disabled':''}>Oyunu başlat</button></div>` : ''}
+  </div></section>`;
+}
+function rLobby(){
+  if (!S.code){
+    app.innerHTML = `<div class="center"><div class="panel"><button class="ghost" data-a="home">← Geri</button><h2 style="margin-top:14px">Çevrimiçi oda</h2>
+    <p style="color:var(--mut);margin:0">Bir kişi oda kurar, diğerleri bu sayfayı kendi cihazında açıp kodu girer.</p>
+    <p class="lab">Adın</p><input id="pn" maxlength="20" placeholder="Örn. Ayşe" value="${esc(S.name)}">
+    <div class="row"><button data-a="rcreate">Oda kur</button></div>
+    <p class="lab">Ya da bir odaya katıl</p><div class="row"><input id="rc" maxlength="4" placeholder="Oda kodu" style="text-transform:uppercase"><button class="ghost" data-a="rjoin">Katıl</button></div>
+    <div class="note">${esc(S.note)}</div></div></div>`;
+    return;
+  }
+  const n = S.players.length;
+  app.innerHTML = `<section class="band"><div class="wrap">
+  <div class="top"><button class="ghost" data-a="home">← Çık</button><h2>Oda kodu <span class="code">${esc(S.code)}</span></h2></div>
+  <p style="margin:-6px 0 18px;color:var(--mut)">Arkadaşların aynı bağlantıyı açıp "Çevrimiçi oda" → kodu girsin. Oyun boyunca bu sayfayı açık tut. Sonra herkes bir karakter seçsin. 2 kişiyseniz kalan karakterler sessiz şüpheli olur.</p>
+  <div class="cards">${C.map(c => { const p = pl(c.id); const mine = p && p.dev === DEV; return `<div class="cc ${mine?'on':''} ${p&&!mine?'taken':''}" tabindex="0" role="button" data-a="claim" data-c="${c.id}">${p?`<span class="tag">${esc(p.name)}${mine?' (sen)':''}</span>`:''}${card(c)}</div>`; }).join('')}</div>
+  <div class="foot"><span>${n} oyuncu hazır${S.host ? ' · Başlatmak için en az 2 oyuncu' : lastV < 0 ? ' · Ev sahibine bağlanılıyor… Kod doğru mu?' : myPres.claim && !S.me ? ' · Seçimin onaylanıyor…' : ' · Ev sahibinin başlatması bekleniyor'}</span>${S.host ? `<button data-a="rstart" ${n<2?'disabled':''}>Oyunu başlat</button>` : ''}</div>
+  </div></section>`;
+}
+function rReveal(){
+  const p = H()[S.ri];
+  app.innerHTML = `<div class="center"><div class="panel">${S.riShow ? `${roleHTML(p.cid)}<div class="row" style="margin-top:20px"><button data-a="rnext">Gizle ve telefonu ver</button></div>`
+  : `<p class="lab">Rol kartı ${S.ri+1}/${H().length}</p><h2>Telefonu ${esc(p.name)}'e ver</h2><p style="color:var(--mut)">Diğerleri ekrana bakmasın. ${esc(p.name)}, sen ${esc(byId(p.cid).name)} olarak oynuyorsun.</p><div class="row"><button data-a="rshow">Rolümü göster</button></div>`}</div></div>`;
+}
+function rGame(){
+  const local = S.mode === 'local';
+  const canAdv = S.mode !== 'online' || S.host;
+  app.innerHTML = `<div class="game">
+  <header class="gh"><div class="tt"><b>Hacıoğlu Konağı</b><span id="rd"></span></div>
+    <div class="dots" id="dots" title="Uyarılar"></div>
+    <button class="ghost" data-a="file">Dosya</button>
+    ${canAdv ? '<button class="red" data-a="adv" id="adv"></button>' : ''}
+  </header>
+  <div class="thread" id="thread" aria-live="polite"></div>
+  <div class="typing" id="typing"></div>
+  <div class="comp">
+    <div class="chips">${S.players.filter(p => local || p.cid !== S.me).map(p => `<button data-a="men" data-c="${p.cid}">@${esc(first(p.cid))}</button>`).join('')}</div>
+    <div class="inrow">${local ? `<select id="as" aria-label="Yazan">${H().map(p => `<option value="${p.cid}" ${p.cid===S.sendAs?'selected':''}>${esc(p.name)}</option>`).join('')}</select>` : ''}
+      <input id="msg" maxlength="280" autocomplete="off" placeholder="${S.mode==='online'&&!S.me?'İzleyicisin':'Mesaj yaz…'}" ${S.mode==='online'&&!S.me?'disabled':''}>
+      <button data-a="send">Gönder</button></div>
+  </div></div>`;
+  updateGame();
+}
+function updateGame(){
+  const th = $('#thread'); if (!th || S.phase !== 'game') return;
+  const rd = $('#rd'); if (rd) rd.textContent = `Tur ${S.round}/3 · ${S.mode==='solo'?'Tek kişi':S.mode==='local'?'Aynı telefon':'Oda '+S.code}`;
+  $('#dots').innerHTML = 'Uyarı ' + [0,1,2].map(i => `<i class="${i<S.strikes?'x':''}"></i>`).join('');
+  const adv = $('#adv'); if (adv) adv.textContent = S.round < 3 ? 'Sonraki ipucu' : 'Oylamaya geç';
+  const meView = S.mode === 'local' ? S.sendAs : S.me;
+  th.innerHTML = S.msgs.map(m => m.sys ? `<div class="sys"><b>${esc(m.head)}</b>${esc(m.text)}</div>`
+    : `<div class="m ${m.cid===meView?'me':''} ${m.pend?'pend':''}">${av(m.cid,34)}<div class="bub"><b>${who(m.cid)}</b><p>${esc(m.text)}</p></div></div>`).join('');
+  th.scrollTop = th.scrollHeight;
+}
+function suspectsFor(voter){ return S.players.filter(p => p.cid !== voter).map(p => `<button data-a="vote" data-c="${p.cid}">${av(p.cid,48)}<span>${esc(byId(p.cid).name)}</span></button>`).join(''); }
+function rVote(){
+  let body;
+  if (S.mode === 'local'){
+    const p = H()[S.vi];
+    body = S.viShow ? `<p class="lab">${esc(p.name)} oy veriyor</p><h2>Katil kim?</h2><div class="vs">${suspectsFor(p.cid)}</div>`
+      : `<p class="lab">Gizli oylama ${S.vi+1}/${H().length}</p><h2>Telefonu ${esc(p.name)}'e ver</h2><div class="row"><button data-a="vready">Oy vermeye hazırım</button></div>`;
+  } else if (S.mode === 'online' && (!S.me || S.votes[S.me])){
+    const n = Object.keys(S.votes).length;
+    body = `<h2>${S.me ? 'Oyun alındı' : 'Oylama sürüyor'}</h2><p style="color:var(--mut)">${n}/${H().length} oy verildi. Diğerleri bekleniyor…</p>`;
+  } else body = `<p class="lab">Son karar</p><h2>Kimi suçluyorsun?</h2><p style="color:var(--mut);margin:0">Dosyayı hatırla: ${S.round} turda ${[1,2,3].slice(0,S.round).reduce((a,r)=>a+cluesFor(r).length,0)} ipucu açıklandı.</p><div class="vs">${suspectsFor(S.me)}</div><div class="row"><button class="ghost" data-a="file">Dosyaya bak</button></div>`;
+  app.innerHTML = `<div class="center"><div class="panel">${body}</div></div>`;
+}
+function npcVotes(){
+  const ids = S.players.map(p => p.cid);
+  S.players.filter(p => !p.human).forEach(p => {
+    const others = ids.filter(i => i !== p.cid); let v;
+    const x = Math.random();
+    if (p.cid === S.killer) v = (x < .5 || !S.herring || S.herring === p.cid) ? S.me : S.herring;
+    else if (S.killer !== p.cid && x < .58) v = S.killer;
+    else if (S.herring && S.herring !== p.cid && x < .82) v = S.herring;
+    else v = rnd(others);
+    if (v === p.cid) v = rnd(others);
+    S.votes[p.cid] = v;
+  });
+}
+function tally(){ const t = {}; Object.values(S.votes).forEach(v => t[v] = (t[v]||0) + 1); const max = Math.max(0, ...Object.values(t)); const top = Object.keys(t).filter(k => t[k] === max); return {t, accused: top.length === 1 ? top[0] : null}; }
+function rEnd(){
+  const {t, accused} = tally(), k = byId(S.killer), caught = accused === S.killer;
+  let mine = '';
+  if (S.me && S.mode !== 'local'){ const win = S.me === S.killer ? !caught : caught; mine = `<p class="big ${win?'win':'lose'}" style="font-family:'DM Serif Display',serif;margin:6px 0">${win?'Kazandın.':'Kaybettin.'}</p>`; }
+  const max = Math.max(1, ...Object.values(t));
+  app.innerHTML = `<div class="center"><div class="panel" style="width:min(640px,100%)">
+  <p class="lab">Sabah oldu</p><h2 class="big">${caught ? 'Katil yakalandı' : 'Katil kaçtı'}</h2>${mine}
+  <p>${accused ? `Oylamada en çok suçlanan: <b>${esc(byId(accused).name)}</b>.` : 'Oylar eşit çıktı; kimse tutuklanamadı.'}</p>
+  <div class="role killer" style="margin-top:16px"><div class="rhead">${av(k.id,56)}<div><p class="lab" style="margin:0">Gerçek katil</p><h3>${esc(k.name)}</h3></div></div><p style="margin-top:10px">${esc(k.truth)}</p></div>
+  <p class="lab">Oylar</p><div class="bars">${S.players.map(p => `<div class="bar"><span>${esc(byId(p.cid).name)}</span><div><i style="width:${(t[p.cid]||0)/max*100}%"></i></div><span>${t[p.cid]||0}</span></div>`).join('')}</div>
+  <div class="row" style="margin-top:20px"><button data-a="again">Yeni oyun</button></div></div></div>`;
+}
+
+/* ---------- events ---------- */
+app.addEventListener('click', onClick); $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); else onClick(e); });
+app.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'msg'){ e.preventDefault(); send(); }
+  else if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('cc')){ e.preventDefault(); e.target.click(); }
+});
+app.addEventListener('input', e => { const id = e.target.dataset.in; if (id) S.sel[id] = e.target.value; });
+app.addEventListener('change', e => { if (e.target.id === 'as'){ S.sendAs = e.target.value; updateGame(); } });
+function onClick(e){
+  const b = e.target.closest('[data-a]'); if (!b || e.target.tagName === 'INPUT') return;
+  const a = b.dataset.a, c = b.dataset.c;
+  if (a === 'mode'){ S.mode = b.dataset.m; S.phase = 'pick'; S.sel = {}; render(); }
+  else if (a === 'home' || a === 'again'){ leaveRoom(); S = fresh(); closeModal(); render(); }
+  else if (a === 'pick'){ if (S.mode === 'solo') return startSolo(c); if (c in S.sel) delete S.sel[c]; else if (Object.keys(S.sel).length < 6) S.sel[c] = ''; render(); const i = document.querySelector(`[data-in="${c}"]`); if (i) i.focus(); }
+  else if (a === 'lstart') startLocal();
+  else if (a === 'rshow'){ S.riShow = true; render(); }
+  else if (a === 'rnext'){ S.riShow = false; S.ri++; if (S.ri >= H().length) S.phase = 'game'; render(); }
+  else if (a === 'rcreate'){ const n = $('#pn').value.trim(); if (!n){ S.note = 'Önce adını yaz.'; return render(); } S.name = n; const code = Array.from({length:4}, () => 'ABCDEFGHJKMNPRSTUVYZ'[Math.floor(Math.random()*20)]).join(''); enterRoom(code, true); }
+  else if (a === 'rjoin'){ const n = $('#pn').value.trim(), code = $('#rc').value.trim(); if (!n){ S.note = 'Önce adını yaz.'; return render(); } if (!/^[a-z]{4}$/i.test(code)){ S.note = 'Oda kodu 4 harf olmalı.'; S.name = n; return render(); } S.name = n; enterRoom(code, false); }
+  else if (a === 'claim'){ const p = pl(c); if (p && p.dev !== DEV) return; setMy({claim:c}); render(); }
+  else if (a === 'rstart'){ if (S.players.length < 2) return; addSilent(); setupRoles(); intro(); postClues(1); S.phase = 'game'; broadcast(); render(); if (S.me) showRole(S.me); }
+  else if (a === 'send') send();
+  else if (a === 'men'){ const i = $('#msg'); if (i && !i.disabled){ i.value = (i.value ? i.value.trimEnd() + ' ' : '') + '@' + first(c) + ' '; i.focus(); } }
+  else if (a === 'adv'){ if (!S.busy) advance(); }
+  else if (a === 'file') showModal(fileHTML());
+  else if (a === 'close') closeModal();
+  else if (a === 'roleof'){ if (S.mode === 'local') showModal(`<h2>Sadece ${esc(pl(c).name)} baksın</h2><div class="row"><button data-a="roleshow" data-c="${c}">Göster</button><button class="ghost" data-a="close">Vazgeç</button></div>`); else showRole(c); }
+  else if (a === 'roleshow') showRole(c);
+  else if (a === 'vready'){ S.viShow = true; render(); }
+  else if (a === 'vote'){
+    closeModal();
+    if (S.mode === 'solo'){ S.votes = {[S.me]: c}; npcVotes(); S.phase = 'end'; render(); }
+    else if (S.mode === 'local'){ S.votes[H()[S.vi].cid] = c; S.vi++; S.viShow = false; if (S.vi >= H().length) S.phase = 'end'; render(); }
+    else { setMy({vote:c}); if (!S.host){ S.votes = {...S.votes, [S.me]: c}; render(); } }
+  }
+}
+
+sampleNS = null;
+if (window.Peer) roomNS = makePeerRoom();
+render();
+}
+</script>
+</body>
+</html>
